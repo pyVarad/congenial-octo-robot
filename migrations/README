@@ -1,0 +1,5 @@
+Run the commands
+`alembic revision --autogenerate -m "create users db object"`
+
+To update the database
+`alembic upgrade head`
