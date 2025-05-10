@@ -1,5 +1,6 @@
 from sqlmodel import select
 from .models import User
+from src.utils.utils import get_password_hash
 from sqlmodel.ext.asyncio.session import AsyncSession
 from typing import List
 from datetime import datetime
@@ -28,6 +29,10 @@ class UserService:
         Create a new user.
         """
         user = User(**user_info.model_dump())
+        if self.user_exists(user.email, session):
+            raise ValueError("User with this email already exists")
+
+        user.password = get_password_hash(user.password)
         user.created_at = user.updated_at = datetime.now()
         session.add(user)
         await session.commit()
@@ -57,3 +62,18 @@ class UserService:
         await session.delete(user)
         await session.commit()
         return user
+    
+    async def get_user_by_email(self, email: str, session: AsyncSession) -> User:
+        """
+        Get a user by email.
+        """
+        statement = select(User).where(User.email == email)
+        user = await session.exec(statement)
+        return user.first() if user else None
+    
+    async def user_exists(self, email: str, session: AsyncSession) -> bool:
+        """
+        Check if a user exists by email.
+        """
+        user = self.get_user_by_email(email, session)
+        return user is not None

@@ -54,7 +54,7 @@ async def get_user(user_id: int, session: AsyncSession = Depends(get_session)):
     return user
 
 @users_router.post(
-    "/",
+    "/signup",
     description="Create a new user",
     status_code=status.HTTP_201_CREATED,
     response_model=User,
@@ -69,11 +69,12 @@ async def create_user(user: CreateUser, session: AsyncSession = Depends(get_sess
     """
     Create a new user.
     """
-    user = await service.create_user(user, session=session)
-    if not user:
+    try:
+        user = await service.create_user(user, session=session)
+    except ValueError as e:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="User already exists",
+            detail=str(e),
         )
     return user
 

@@ -1,6 +1,8 @@
 from fastapi import FastAPI
 from src.users.routes import users_router
+from contextlib import asynccontextmanager
 
+@asynccontextmanager
 async def lifespan(app: FastAPI):
     """
     Lifespan function to initialize the database.
@@ -18,5 +20,6 @@ app = FastAPI(
     openapi_url="/api/v1/openapi.json",
     docs_url="/api/v1/docs",
     redoc_url="/api/v1/redoc",
+    lifespan=lifespan
 )
 app.include_router(prefix="/api/v1/users", tags=["Users"], router=users_router)
